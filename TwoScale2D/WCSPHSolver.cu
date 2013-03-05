@@ -285,15 +285,29 @@ __device__ inline void updateAccCell(float2& acc, float2& accT, float2& accB,
 //---------------------------------------------------------------------------
 //  Defintions of global kernels
 //---------------------------------------------------------------------------
-__global__ void updateParticleType (int* const dParticleTypes, 
-    int* const dParticleIDs, const float* const dParticlePositions, 
-    unsigned int numParticles)
+__global__
+void initParticleIDs (int* const dParticleIDs, unsigned int maxParticles)
 {
+    // initially the particle id list stores particle ids in ascending order
 
+    unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
+
+    if (idx >= maxParticles)
+    {
+        return;
+    }
+
+    dParticleIDs[idx] = idx;
 }
-__global__ void computeParticleHashAndResetIndex (int* const dParticleHashs, 
-    int* const dParticleIDs, const float* const dParticlePositions, 
-    unsigned int numParticles)
+//---------------------------------------------------------------------------
+__global__ 
+void computeParticleHash 
+(   
+    int* const dParticleHashs, 
+    int* const dParticleIDs, 
+    const float* const dParticlePositions, 
+    unsigned int numParticles
+)
 {
     unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
 
@@ -302,13 +316,15 @@ __global__ void computeParticleHashAndResetIndex (int* const dParticleHashs,
         return;
     }
 
-    // reset indices
-    dParticleIDs[idx] = idx;
+    // get particle id
+    int id = dParticleIDs[idx];
 
-    // set particle hash
+    // get particle position
     float2 pos;
-    pos.x = dParticlePositions[2*idx + 0];
-    pos.y = dParticlePositions[2*idx + 1];
+    pos.x = dParticlePositions[2*id + 0];
+    pos.y = dParticlePositions[2*id + 1];
+    
+    // set particle hash
     dParticleHashs[idx] = computeHash(pos);
 }
 //---------------------------------------------------------------------------
@@ -393,11 +409,21 @@ __global__ void computeParticleDensityPressure
     dParticlePressures[id] = gdTaitCoefficient*(a3*a3*a - 1.0f);
 }
 //---------------------------------------------------------------------------
-__global__ void computeParticleAccelerationAndAdvance 
-    (float* const dParticlePositions, float* const dParticleVelocities,
-    const float* const dParticleDensities, const float* const dParticlePressures, 
-    const int* const dParticleIDs, const int* const dCellStartIndices,
-    const int* const dCellEndIndices, float dt, unsigned int numParticles)
+__global__ 
+void computeParticleAccelerationAndAdvance 
+(
+    float* const dParticlePositions, 
+    float* const dParticleVelocities,
+    int* const dParticleIDsNew,
+    int* const dParticleCount,
+    const float* const dParticleDensities, 
+    const float* const dParticlePressures, 
+    const int* const dParticleIDs, 
+    const int* const dCellStartIndices,
+    const int* const dCellEndIndices, 
+    float dt, 
+    unsigned int numParticles
+)
 {
     unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
 
@@ -471,6 +497,10 @@ __global__ void computeParticleAccelerationAndAdvance
     dParticlePositions[2*id + 0] = pos.x;
     dParticlePositions[2*id + 1] = pos.y;
 
+    // add particle to id list, get index for particle id and store
+    // id to new particle id list
+    int index = atomicAdd(dParticleCount, 1);
+    dParticleIDsNew[index] = id;
 }
 //---------------------------------------------------------------------------
 //  Definiton of WCSPHConfig
@@ -525,9 +555,11 @@ WCSPHConfig::~WCSPHConfig ()
 //  - Nested Class : Neighbour Grid 
 //-----------------------------------------------------------------------------
 WCSPHSolver::NeighborGrid::NeighborGrid (const int gridDimensions[2], 
-    int maxParticles)
+    int maxParticles, dim3 blockDim)
+: blockDim(blockDim)
 {
-    CUDA_SAFE_CALL( cudaMalloc(&dNumParticles, sizeof(int)) );
+    // malloc device mem
+    CUDA_SAFE_CALL( cudaMalloc(&dParticleCount, sizeof(int)) );
 
     int sizeIds = maxParticles*sizeof(int);
     CUDA_SAFE_CALL( cudaMalloc(&dParticleHashs,  sizeIds) );
@@ -537,11 +569,21 @@ WCSPHSolver::NeighborGrid::NeighborGrid (const int gridDimensions[2],
     int sizeCellLists = gridDimensions[0]*gridDimensions[1]*sizeof(int);
     CUDA_SAFE_CALL( cudaMalloc(&dCellStart, sizeCellLists) );
     CUDA_SAFE_CALL( cudaMalloc(&dCellEnd,   sizeCellLists) );
+
+    // compute initial grid dimensions
+    gridDim.x = maxParticles % blockDim.x == 0 ? maxParticles/blockDim.x :
+        maxParticles/blockDim.x + 1;
+    gridDim.y = 1; 
+    gridDim.z = 1; 
+
+    // initialize the particle id list
+    initParticleIDs<<<gridDim, blockDim>>>(dParticleIDs[0], maxParticles);
+    initParticleIDs<<<gridDim, blockDim>>>(dParticleIDs[1], maxParticles);
 }
 //-----------------------------------------------------------------------------
 WCSPHSolver::NeighborGrid::~NeighborGrid ()
 {
-    CUDA::SafeFree<int>(&dNumParticles);
+    CUDA::SafeFree<int>(&dParticleCount);
     CUDA::SafeFree<int>(&dParticleIDs[0]);
     CUDA::SafeFree<int>(&dParticleIDs[1]);
     CUDA::SafeFree<int>(&dParticleHashs);
@@ -569,7 +611,8 @@ WCSPHSolver::WCSPHSolver
     mBoundaryParticles(&boundaryParticles), 
 
     mIsBoundaryInit(false),
-    mFluidParticleGrid(config.DomainDimensions, fluidParticles.GetMaxParticles())
+    mFluidParticleGrid(config.DomainDimensions, fluidParticles.GetMaxParticles(),
+        dim3(256))
 {
     mDomainOrigin[0] = config.DomainOrigin[0];
     mDomainOrigin[1] = config.DomainOrigin[1];
@@ -581,7 +624,6 @@ WCSPHSolver::WCSPHSolver
     mDomainDimensions[1] = static_cast<int>(std::ceil((mDomainEnd[1] - 
         mDomainOrigin[1])/mEffectiveRadius));
 
-
     // set cuda block and grid dimensions
     mBlockDim.x = 256; 
     mBlockDim.y = 1; 
@@ -592,7 +634,7 @@ WCSPHSolver::WCSPHSolver
     mGridDim.y = 1;
     mGridDim.z = 1;
     
-    // allocate extra device memory for neighbor search
+    // allocate extra device memory for neighbor search (boundaries)
     unsigned int size = sizeof(float)*mBoundaryParticles->GetNumParticles();
     CUDA_SAFE_CALL ( cudaMalloc(&mdBoundaryParticleHashs, size) );
     CUDA_SAFE_CALL ( cudaMalloc(&mdBoundaryParticleIDs, size) );
@@ -682,46 +724,48 @@ void WCSPHSolver::Unbind () const
 //-----------------------------------------------------------------------------
 void WCSPHSolver::Advance ()
 {
+    static unsigned char activeID = 0;
+
     CUDA::Timer timer;
 
     mFluidParticles->Map();
     mBoundaryParticles->Map();
     timer.Start();
-    //setUpNeighborSearch();
-    this->updateNeighborGrid();
+    this->updateNeighborGrid(activeID);
     unsigned int numParticles = mFluidParticles->GetNumParticles();
-    computeParticleDensityPressure<<<mGridDim, mBlockDim>>>
+    computeParticleDensityPressure
+        <<<mFluidParticleGrid.gridDim, mFluidParticleGrid.blockDim>>>
         (mFluidParticles->Densities(), mFluidParticles->Pressures(), 
-        mFluidParticleGrid.dParticleIDs[0], mFluidParticleGrid.dCellStart, 
-        mFluidParticleGrid.dCellEnd, mFluidParticles->Positions(), 
-        numParticles);    
-    computeParticleAccelerationAndAdvance<<<mGridDim, mBlockDim>>>
-        (mFluidParticles->Positions(), mFluidParticles->Velocities(),
-        mFluidParticles->Densities(), mFluidParticles->Pressures(), 
-        mFluidParticleGrid.dParticleIDs[0], mFluidParticleGrid.dCellStart, 
-        mFluidParticleGrid.dCellEnd, mTimeStep, numParticles);
+        mFluidParticleGrid.dParticleIDs[activeID], 
+        mFluidParticleGrid.dCellStart, mFluidParticleGrid.dCellEnd, 
+        mFluidParticles->Positions(), numParticles);    
+    this->updatePositions(activeID);
     timer.Stop();
     timer.DumpElapsed();
     mBoundaryParticles->Unmap();
     mFluidParticles->Unmap();
+
+    activeID = (activeID + 1) % 2; 
 }
 //-----------------------------------------------------------------------------
-//  Private member 
+//  - private methods
 //-----------------------------------------------------------------------------
-void WCSPHSolver::updateNeighborGrid ()
+void WCSPHSolver::updateNeighborGrid (unsigned char activeID)
 {
     unsigned int numParticles = mFluidParticles->GetNumParticles();
     
     // compute hash of active particles
-    computeParticleHashAndResetIndex<<<mGridDim, mBlockDim>>>
-        (mFluidParticleGrid.dParticleHashs, mFluidParticleGrid.dParticleIDs[0], 
-         mFluidParticles->Positions(), numParticles);
+    computeParticleHash
+        <<<mFluidParticleGrid.gridDim, mFluidParticleGrid.blockDim>>>
+        (mFluidParticleGrid.dParticleHashs, 
+        mFluidParticleGrid.dParticleIDs[activeID], 
+        mFluidParticles->Positions(), numParticles);
     
     // sort active ids by hash
     thrust::sort_by_key
         (thrust::device_ptr<int>(mFluidParticleGrid.dParticleHashs),
         thrust::device_ptr<int>(mFluidParticleGrid.dParticleHashs + numParticles), 
-        thrust::device_ptr<int>(mFluidParticleGrid.dParticleIDs[0]));
+        thrust::device_ptr<int>(mFluidParticleGrid.dParticleIDs[activeID]));
 
     // set all grid cells to be empty
     unsigned int size = mDomainDimensions[0]*mDomainDimensions[1]*
@@ -732,29 +776,41 @@ void WCSPHSolver::updateNeighborGrid ()
         EMPTY_CELL, size) ); 
 
     // fill grid cells according to current particles
-    int sharedMemSize = sizeof(int)*(mBlockDim.x + 1);
-    computeCellStartEndIndices<<<mGridDim, mBlockDim, sharedMemSize>>>
+    int sharedMemSize = sizeof(int)*(mFluidParticleGrid.blockDim.x + 1);
+    computeCellStartEndIndices
+    <<<mFluidParticleGrid.gridDim, mFluidParticleGrid.blockDim, sharedMemSize>>>
         (mFluidParticleGrid.dCellStart, mFluidParticleGrid.dCellEnd, 
         mFluidParticleGrid.dParticleHashs, numParticles);
 
 }
 //-----------------------------------------------------------------------------
-//void WCSPHSolver::setUpNeighborSearch ()
-//{
-//    unsigned int numParticles = mFluidParticles->GetNumParticles();
-//    computeParticleHashAndResetIndex<<<mGridDim, mBlockDim>>>(mdParticleHashs,
-//        mdParticleIDs, mFluidParticles->Positions(), numParticles);
-//    thrust::sort_by_key(thrust::device_ptr<int>(mdParticleHashs),
-//        thrust::device_ptr<int>(mdParticleHashs + numParticles), 
-//        thrust::device_ptr<int>(mdParticleIDs));
-//    unsigned int size = mDomainDimensions[0]*mDomainDimensions[1]*sizeof(int);
-//    CUDA_SAFE_CALL ( cudaMemset(mdCellStartIndices, EMPTY_CELL, size) ); 
-//    CUDA_SAFE_CALL ( cudaMemset(mdCellEndIndices, EMPTY_CELL, size) ); 
-//    int sharedMemSize = sizeof(int)*(mBlockDim.x + 1);
-//    computeCellStartEndIndices<<<mGridDim, mBlockDim, sharedMemSize>>>
-//        (mdCellStartIndices, mdCellEndIndices, mdParticleHashs, numParticles);
-//
-//}
+void WCSPHSolver::updatePositions (unsigned char activeID)
+{
+    // reset particle count to zero
+    CUDA_SAFE_CALL( cudaMemset(mFluidParticleGrid.dParticleCount, 0,
+        sizeof(float)) );
+
+    computeParticleAccelerationAndAdvance
+        <<<mFluidParticleGrid.gridDim, mFluidParticleGrid.blockDim>>>
+        (mFluidParticles->Positions(), mFluidParticles->Velocities(), 
+        mFluidParticleGrid.dParticleIDs[(activeID + 1) % 2], 
+        mFluidParticleGrid.dParticleCount, mFluidParticles->Densities(),
+        mFluidParticles->Pressures(), mFluidParticleGrid.dParticleIDs[activeID], 
+        mFluidParticleGrid.dCellStart, mFluidParticleGrid.dCellEnd, mTimeStep, 
+        mFluidParticles->GetNumParticles());
+
+    // copy back the # of current particles in the list
+    CUDA_SAFE_CALL( cudaMemcpy(&mFluidParticleGrid.particleCount, 
+        mFluidParticleGrid.dParticleCount, sizeof(float),
+        cudaMemcpyDeviceToHost) );
+
+
+    // recompute CUDA grid dimensions according to new # of particles
+    mFluidParticleGrid.gridDim.x = mFluidParticleGrid.particleCount % 
+        mFluidParticleGrid.blockDim.x == 0 ?
+        mFluidParticleGrid.particleCount/mFluidParticleGrid.blockDim.x :
+        mFluidParticleGrid.particleCount/mFluidParticleGrid.blockDim.x + 1;
+}
 //-----------------------------------------------------------------------------
 void WCSPHSolver::initBoundaries () const
 {
@@ -769,7 +825,9 @@ void WCSPHSolver::initBoundaries () const
     gridDim.y = 1;
     gridDim.z = 1;
     mBoundaryParticles->Map();
-    computeParticleHashAndResetIndex<<<gridDim, blockDim>>>
+    initParticleIDs<<<gridDim, blockDim>>>(mdBoundaryParticleIDs, 
+        numBoundaryParticles);
+    computeParticleHash<<<gridDim, blockDim>>>
         (mdBoundaryParticleHashs, mdBoundaryParticleIDs, 
         mBoundaryParticles->Positions(), numBoundaryParticles);
     thrust::sort_by_key(thrust::device_ptr<int>(mdBoundaryParticleHashs),
@@ -786,7 +844,6 @@ void WCSPHSolver::initBoundaries () const
     computeCellStartEndIndices<<<gridDim, blockDim, sharedMemSize>>>
         (mdBoundaryCellStartIndices, mdBoundaryCellEndIndices, 
         mdBoundaryParticleHashs, numBoundaryParticles);
-    //CUDA::DumpArray<int>(mdBoundaryCellEndIndices,mDomainDimensions[0]*mDomainDimensions[1], 0, 1, 200);
     mBoundaryParticles->Unmap();
 }
 //-----------------------------------------------------------------------------

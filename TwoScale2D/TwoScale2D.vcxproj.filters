@@ -36,6 +36,7 @@
     <ClCompile Include="OpenGL\OpenGL.cpp">
       <Filter>OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ParticleSystem.inl">
@@ -70,6 +71,7 @@
     <ClInclude Include="OpenGL\OpenGL.h">
       <Filter>OpenGL</Filter>
     </ClInclude>
+    <ClInclude Include="stdutil.h" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="WCSPHSolver.cu">

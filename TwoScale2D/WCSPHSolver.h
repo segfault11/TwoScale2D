@@ -41,17 +41,21 @@ class WCSPHSolver
     {
         DECL_DEFAULTS (NeighborGrid)
 
-        NeighborGrid (const int gridDimensions[2], int maxParticles);
+        NeighborGrid (const int gridDimensions[2], int maxParticles,  
+            dim3 blockDim);
         ~NeighborGrid ();
 
-
-        int* dNumParticles;     //!< current # of particles in the grid
-        int* dParticleHashs;
+        int particleCount;      //!< current # of particles in the grid (host)
+        int* dParticleCount;    //!< current # of particles in the grid (dev)
+        int* dParticleHashs;    
         int* dParticleIDs[2];   //!< flip flop array for 
                                 //!< storing active particleIDS
        
         int* dCellStart;
         int* dCellEnd;
+
+        const dim3 blockDim;
+        dim3 gridDim;
     };
 
 public: 
@@ -64,10 +68,10 @@ public:
     void Advance ();
 
 private:
-    inline void setUpNeighborSearch ();
     inline void initBoundaries () const;
 
-    inline void updateNeighborGrid ();
+    inline void updateNeighborGrid (unsigned char activeID);
+    inline void updatePositions (unsigned char activeID);
 
 
     float mDomainOrigin[2];
@@ -86,14 +90,10 @@ private:
     
     ParticleSystem* mBoundaryParticles;
     
-
     dim3 mGridDim;
     dim3 mBlockDim;
 
-
-
     mutable bool mIsBoundaryInit;
-
     int* mdBoundaryParticleHashs;
     int* mdBoundaryParticleIDs;
     int* mdBoundaryCellStartIndices;
