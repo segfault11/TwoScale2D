@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ParticleSystem">
+      <UniqueIdentifier>{d4527a40-2300-4013-9f8a-985fadb33905}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer">
+      <UniqueIdentifier>{a5e87a4e-7a69-4e33-b4fe-b52ea6761db2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WCSPH">
+      <UniqueIdentifier>{d8da525b-4b7e-4103-8c86-b3dae34c845f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="OpenGL">
+      <UniqueIdentifier>{b1fed1b0-2fc7-4d27-9844-2cbff7011748}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VideoWriter">
+      <UniqueIdentifier>{07a7e37c-a09c-4845-89dd-71c41570106c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CUDA">
+      <UniqueIdentifier>{8093e561-72a2-48f2-98c8-758da2e3c8b7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ParticleSystem.cpp">
+      <Filter>ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="PointRenderer.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="CUDA\cuda.cpp">
+      <Filter>CUDA</Filter>
+    </ClCompile>
+    <ClCompile Include="VideoWriter\VideoWriter.cpp">
+      <Filter>VideoWriter</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGL\OpenGL.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ParticleSystem.inl">
+      <Filter>ParticleSystem</Filter>
+    </None>
+    <None Include="PointRendererVertexShader.glsl">
+      <Filter>Renderer</Filter>
+    </None>
+    <None Include="PointRendererFragmentShader.glsl">
+      <Filter>Renderer</Filter>
+    </None>
+    <None Include="PointRendererGeometryShader.glsl">
+      <Filter>Renderer</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ParticleSystem.h">
+      <Filter>ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="PointRenderer.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="WCSPHSolver.h">
+      <Filter>WCSPH</Filter>
+    </ClInclude>
+    <ClInclude Include="CUDA\cuda.h">
+      <Filter>CUDA</Filter>
+    </ClInclude>
+    <ClInclude Include="VideoWriter\VideoWriter.h">
+      <Filter>VideoWriter</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenGL\OpenGL.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="WCSPHSolver.cu">
+      <Filter>WCSPH</Filter>
+    </CudaCompile>
+  </ItemGroup>
+</Project>
