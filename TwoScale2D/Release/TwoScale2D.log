@@ -1,33 +1,28 @@
-﻿Build started 3/10/2013 6:59:00 PM.
+﻿Build started 3/10/2013 10:13:14 PM.
      1>Project "C:\Users\Arno\Documents\Projects\TwoScale2D\TwoScale2D\TwoScale2D.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
-         Touching "Release\TwoScale2D.unsuccessfulbuild".
+         Creating "Release\TwoScale2D.unsuccessfulbuild" because "AlwaysCreate" was specified.
        AddCudaCompileDeps:
          C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\cl.exe /E /nologo /showIncludes /TP /D__CUDACC__ /D_MBCS /IC:\OpenCV2.1\include /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\include" /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\bin" /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\include" /I. /FIcuda_runtime.h /c C:\Users\Arno\Documents\Projects\TwoScale2D\TwoScale2D\WCSPHSolver.cu 
        AddCudaCompilePropsDeps:
        Skipping target "AddCudaCompilePropsDeps" because all output files are up-to-date with respect to the input files.
        CudaBuild:
          Compiling CUDA source file WCSPHSolver.cu...
-         cmd.exe /C "C:\Users\Arno\AppData\Local\Temp\880e1813719f4b08aa422456e57c2c8c.cmd"
+         cmd.exe /C "C:\Users\Arno\AppData\Local\Temp\a77df4501c14464abbe3c7bd495f9003.cmd"
          "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\bin\nvcc.exe" -gencode=arch=compute_20,code=\"sm_20,compute_20\" --use-local-env --cl-version 2010 -ccbin "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin"  -I"C:\OpenCV2.1\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\include"     --keep-dir "Release" -maxrregcount=0  --machine 32 --compile     -D_MBCS -Xcompiler "/EHsc /W3 /nologo /O2 /Zi  /MD  " -o "Release\WCSPHSolver.cu.obj" "C:\Users\Arno\Documents\Projects\TwoScale2D\TwoScale2D\WCSPHSolver.cu"
          
          C:\Users\Arno\Documents\Projects\TwoScale2D\TwoScale2D>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\bin\nvcc.exe" -gencode=arch=compute_20,code=\"sm_20,compute_20\" --use-local-env --cl-version 2010 -ccbin "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin"  -I"C:\OpenCV2.1\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\include"     --keep-dir "Release" -maxrregcount=0  --machine 32 --compile     -D_MBCS -Xcompiler "/EHsc /W3 /nologo /O2 /Zi  /MD  " -o "Release\WCSPHSolver.cu.obj" "C:\Users\Arno\Documents\Projects\TwoScale2D\TwoScale2D\WCSPHSolver.cu" 
          WCSPHSolver.cu
-         tmpxft_00001514_00000000-2_WCSPHSolver.cudafe1.gpu
-         tmpxft_00001514_00000000-7_WCSPHSolver.cudafe2.gpu
+         tmpxft_00001e40_00000000-2_WCSPHSolver.cudafe1.gpu
+         tmpxft_00001e40_00000000-7_WCSPHSolver.cudafe2.gpu
          WCSPHSolver.cu
-         tmpxft_00001514_00000000-2_WCSPHSolver.cudafe1.cpp
-         tmpxft_00001514_00000000-12_WCSPHSolver.ii
-     1>C:/Users/Arno/Documents/Projects/TwoScale2D/TwoScale2D/WCSPHSolver.cu(668): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>C:/Users/Arno/Documents/Projects/TwoScale2D/TwoScale2D/WCSPHSolver.cu(669): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+         tmpxft_00001e40_00000000-2_WCSPHSolver.cudafe1.cpp
+         tmpxft_00001e40_00000000-12_WCSPHSolver.ii
+     1>C:/Users/Arno/Documents/Projects/TwoScale2D/TwoScale2D/WCSPHSolver.cu(742): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>C:/Users/Arno/Documents/Projects/TwoScale2D/TwoScale2D/WCSPHSolver.cu(743): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>C:/Users/Arno/Documents/Projects/TwoScale2D/TwoScale2D/WCSPHSolver.cu(894): warning C4244: '=' : conversion from 'float' to 'unsigned int', possible loss of data
        ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /IC:\OpenCV2.1\include /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\include" /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
-         main.cpp
-     1>main.cpp(103): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>main.cpp(105): warning C4305: 'initializing' : truncation from 'double' to 'float'
-     1>main.cpp(107): warning C4305: 'initializing' : truncation from 'double' to 'float'
-     1>main.cpp(149): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>main.cpp(151): warning C4305: 'initializing' : truncation from 'double' to 'float'
+         All outputs are up-to-date.
        ManifestResourceCompile:
          All outputs are up-to-date.
        Link:
@@ -63,4 +58,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:20.57
+Time Elapsed 00:00:19.93

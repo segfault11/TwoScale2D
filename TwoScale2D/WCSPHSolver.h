@@ -16,15 +16,17 @@ struct WCSPHConfig
     DECL_DEFAULTS (WCSPHConfig)
 
 
-    WCSPHConfig (float xs, float ys, float xe, float ye, float effectiveRadius,
-        float restDensity, float taitCoeff, float speedSound, float alpha, 
-        float tensionCoefficient, float timeStep);
+    WCSPHConfig (float xs, float ys, float xe, float ye, float effectiveRadius, 
+        float effectiveRadiusHigh, float restDensity, float taitCoeff, 
+        float speedSound, float alpha, float tensionCoefficient, float timeStep);
     ~WCSPHConfig ();
 
     float DomainOrigin[2];
     float DomainEnd[2];
     int DomainDimensions[2];
+    int DomainDimensionsHigh[2];
     float EffectiveRadius;
+    float EffectiveRadiusHigh;
     float RestDensity;
     float TaitCoeffitient;
     float SpeedSound;
@@ -41,24 +43,17 @@ class WCSPHSolver
     {
         DECL_DEFAULTS (NeighborGrid)
 
-        NeighborGrid (const int gridDimensions[2], int maxParticles,  
-            dim3 blockDim);
+        NeighborGrid (const int gridDimensions[2], int maxParticles);
         ~NeighborGrid ();
 
-        int particleCount;      //!< current # of particles in the grid (host)
-        int* dParticleCount;    //!< current # of particles in the grid (dev)
         int* dParticleHashs;    
-       
         int* dCellStart;
         int* dCellEnd;
-
-        const dim3 blockDim;
-        dim3 gridDim;
     };
 
 public: 
     WCSPHSolver (const WCSPHConfig& config, ParticleSystem& fluidParticles, 
-        ParticleSystem& boundaryParticles);
+        ParticleSystem& fluidParticlesHigh,ParticleSystem& boundaryParticles);
     ~WCSPHSolver ();
     
     void Bind () const;
@@ -82,18 +77,20 @@ private:
     float mTensionCoeffient;
     float mTimeStep;
 
+    dim3 mBlockDim;
+
+    dim3 mGridDim;
+    int* mdParticleCount;
     ParticleSystem* mFluidParticles;
     NeighborGrid mFluidParticleGrid;
     
-    //ParticleSystem* mFluidParticlesHigh;
-    //NeighborGrid mFluidParticleGridHigh;
-
+    dim3 mGridDimHigh;
+    int* mdParticleCountHigh;
+    ParticleSystem* mFluidParticlesHigh;
+    NeighborGrid mFluidParticleGridHigh;
 
     ParticleSystem* mBoundaryParticles;
     
-    dim3 mGridDim;
-    dim3 mBlockDim;
-
     mutable bool mIsBoundaryInit;
     int* mdBoundaryParticleHashs;
     int* mdBoundaryParticleIDs;

@@ -144,7 +144,7 @@ ParticleSystem* CreateParticleBoxCanvas (float xs, float ys, float dx,
     int dimX, int dimY, int offX, int offY,
     float particleMass)
 {
-    unsigned int numParticles = (dimX + 2*offX)*(dimY + 2*offY);
+    unsigned int numParticles = (dimX + 2*offX)*(dimY + 2*offY) - dimX*dimY;
     ParticleSystem* particleSystem = new ParticleSystem(numParticles, 
         particleMass);
      

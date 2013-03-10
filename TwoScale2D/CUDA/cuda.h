@@ -15,7 +15,7 @@
 #include <sstream>
 
 
-#define CUDA_SAFE_CALL(x) CUDA::SafeCall(x, __FILE__, __LINE__)
+#define CUDA_SAFE_CALL(x) CUDA::SafeCall(x, __FILE__, __LINE__);
 
 namespace CUDA
 {

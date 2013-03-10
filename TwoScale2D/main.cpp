@@ -13,8 +13,10 @@
 #define HEIGHT 800
 
 ParticleSystem* gFluidParticles;
+ParticleSystem* gFluidParticlesHigh;
 ParticleSystem* gBoundaryParticles;
 PointRenderer* gFluidRenderer;
+PointRenderer* gFluidRendererHigh;
 PointRenderer* gBoundaryRenderer;
 WCSPHSolver* gSolver;
 static VideoWriter gsVideoWriter("video.avi", WIDTH, HEIGHT);
@@ -61,6 +63,7 @@ void display ()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     gFluidRenderer->Render();
+    gFluidRendererHigh->Render();
     gBoundaryRenderer->Render();
 
 
@@ -101,31 +104,53 @@ void init ()
         unsigned int numParticles = 101*151;
         float particleMass = fluidVol*restDensity/numParticles;
         float effectiveRadius = std::sqrtf(fluidVol*25.0f/(numParticles*PI));
+        float effectiveRadiusHigh = 0.5f*std::sqrtf(fluidVol*25.0f/(numParticles*PI));
         float taitCoeff = 1119.0714f;
-        float speedSound = 88.1472;
+        float speedSound = 88.1472f;
         float alpha = 0.04f;
-        float tensionCoefficient = 0.08;
+        float tensionCoefficient = 0.08f;
         float timeStep = 0.0005f;
 
-
-        gFluidParticles = CreateParticleBox(0.105f, 0.105f, 0.0025f, 101, 151, 
-            particleMass);
-
-        
-        gBoundaryParticles = CreateParticleBoxCanvas(0.1f, 0.1f, 0.0025f, 
-            321, 321, 3, 3, 1000.0f*0.25f*0.25f/(101.0f*151.0f));
-
-        gFluidRenderer = new PointRenderer(*gFluidParticles, 0.0f, 0.0f, 1.0f,
-            1.0f, 0.0f, 0.6f, 0.8f, 1.0f);
-        gBoundaryRenderer = new PointRenderer(*gBoundaryParticles, 0.0f, 0.0f, 
-            1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-
-        
-        WCSPHConfig config(0.0f, 0.0f, 1.0f, 1.0f, effectiveRadius, restDensity, 
-            taitCoeff, speedSound, alpha, tensionCoefficient, timeStep);
-        
-        
-        gSolver = new WCSPHSolver(config, *gFluidParticles, *gBoundaryParticles);
+        gFluidParticles = CreateParticleBox
+        (
+            0.105f, 0.105f, 0.0025f, 101, 151, 
+            particleMass
+        );     
+        gFluidParticlesHigh = new ParticleSystem
+        (
+            gFluidParticles->GetMaxParticles()*4,
+            gFluidParticles->GetMass()/4.0f
+        );
+        gBoundaryParticles = CreateParticleBoxCanvas
+        (
+            0.1f, 0.1f, 0.0025f,321, 321, 3, 3, 
+            1000.0f*0.25f*0.25f/(101.0f*151.0f)
+        );
+        gFluidRenderer = new PointRenderer
+        (
+            *gFluidParticles, 0.0f, 0.0f, 1.0f,
+            1.0f, 0.0f, 0.6f, 0.8f, 1.0f
+        );
+        gFluidRendererHigh = new PointRenderer
+        (
+            *gFluidParticlesHigh, 0.0f, 0.0f, 1.0f,
+            1.0f, 0.7f, 0.0f, 0.0f, 1.0f        
+        );
+        gBoundaryRenderer = new PointRenderer
+        (
+            *gBoundaryParticles, 0.0f, 0.0f, 
+            1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f
+        );
+        WCSPHConfig config
+        (   
+            0.0f, 0.0f, 1.0f, 1.0f, effectiveRadius, 
+            effectiveRadiusHigh, restDensity, taitCoeff, speedSound, 
+            alpha, tensionCoefficient, timeStep
+        );     
+        gSolver = new WCSPHSolver
+        (
+            config, *gFluidParticles, *gFluidParticlesHigh,*gBoundaryParticles
+        );
         gSolver->Bind();  
     }
     catch (const std::runtime_error& e)
@@ -137,54 +162,56 @@ void init ()
 
 
 
-void init2 ()
-{
-    // Dam break simulation with about 60000 fluid particles
-    try
-    {
-        float restDensity = 1000.0f;
-        float fluidVol = 200.0f*0.00125f*300.0f*0.00125f;
-        unsigned int numParticles = 201*301;
-        float particleMass = fluidVol*restDensity/numParticles;
-        float effectiveRadius = std::sqrtf(fluidVol*30.0f/(numParticles*PI));
-        float taitCoeff = 1119.0714f;
-        float speedSound = 88.1472;
-        float alpha = 0.046f;
-        float tensionCoefficient = 0.08f;
-        float timeStep = 0.0002f;
-
-        gFluidParticles = CreateParticleBox(0.105f, 0.105f, 0.00125f, 201, 301, 
-            particleMass);
-        
-        gBoundaryParticles = CreateParticleBoxCanvas(0.1f, 0.1f, 0.00125f, 
-            641, 641, 4, 4, particleMass);
-
-        gFluidRenderer = new PointRenderer(*gFluidParticles, 0.0f, 0.0f, 1.0f,
-            1.0f, 0.0f, 0.6f, 0.8f, 1.0f);
-        gBoundaryRenderer = new PointRenderer(*gBoundaryParticles, 0.0f, 0.0f, 
-            1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-
-        
-        WCSPHConfig config(0.0f, 0.0f, 1.0f, 1.0f, effectiveRadius, restDensity, 
-            taitCoeff, speedSound, alpha, tensionCoefficient, timeStep);
-
-        
-        
-        gSolver = new WCSPHSolver(config, *gFluidParticles, *gBoundaryParticles);
-        gSolver->Bind();  
-    }
-    catch (const std::runtime_error& e)
-    {
-        std::cout << e.what() << std::endl;
-    }
-}
+//void init2 ()
+//{
+//    // Dam break simulation with about 60000 fluid particles
+//    try
+//    {
+//        float restDensity = 1000.0f;
+//        float fluidVol = 200.0f*0.00125f*300.0f*0.00125f;
+//        unsigned int numParticles = 201*301;
+//        float particleMass = fluidVol*restDensity/numParticles;
+//        float effectiveRadius = std::sqrtf(fluidVol*30.0f/(numParticles*PI));
+//        float taitCoeff = 1119.0714f;
+//        float speedSound = 88.1472;
+//        float alpha = 0.046f;
+//        float tensionCoefficient = 0.08f;
+//        float timeStep = 0.0002f;
+//
+//        gFluidParticles = CreateParticleBox(0.105f, 0.105f, 0.00125f, 201, 301, 
+//            particleMass);
+//        
+//        gBoundaryParticles = CreateParticleBoxCanvas(0.1f, 0.1f, 0.00125f, 
+//            641, 641, 4, 4, particleMass);
+//
+//        gFluidRenderer = new PointRenderer(*gFluidParticles, 0.0f, 0.0f, 1.0f,
+//            1.0f, 0.0f, 0.6f, 0.8f, 1.0f);
+//        gBoundaryRenderer = new PointRenderer(*gBoundaryParticles, 0.0f, 0.0f, 
+//            1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+//
+//        
+//        WCSPHConfig config(0.0f, 0.0f, 1.0f, 1.0f, effectiveRadius, restDensity, 
+//            taitCoeff, speedSound, alpha, tensionCoefficient, timeStep);
+//
+//        
+//        
+//        gSolver = new WCSPHSolver(config, *gFluidParticles, *gBoundaryParticles);
+//        gSolver->Bind();  
+//    }
+//    catch (const std::runtime_error& e)
+//    {
+//        std::cout << e.what() << std::endl;
+//    }
+//}
 
 
 void tearDown ()
 {
     delete gFluidParticles;
     delete gBoundaryParticles;
+    delete gFluidParticlesHigh;
     delete gFluidRenderer;
+    delete gFluidRendererHigh;
     delete gBoundaryRenderer;
     delete gSolver;
 }
