@@ -35,5 +35,8 @@ void BindFragDataLocation(GLuint program, const char* szColorBufName,
 void LinkProgram(GLuint program);
 void DumpLog(GLuint program);
 
+void CreateBufferObject (GLuint& buffer, GLenum target, 
+    GLsizeiptr size, const GLvoid* data, GLenum usage);
+
 }
 #endif

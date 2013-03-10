@@ -48,8 +48,6 @@ class WCSPHSolver
         int particleCount;      //!< current # of particles in the grid (host)
         int* dParticleCount;    //!< current # of particles in the grid (dev)
         int* dParticleHashs;    
-        int* dParticleIDs[2];   //!< flip flop array for 
-                                //!< storing active particleIDS
        
         int* dCellStart;
         int* dCellEnd;
@@ -59,7 +57,7 @@ class WCSPHSolver
     };
 
 public: 
-    WCSPHSolver (const WCSPHConfig& config, ParticleSystem& fluidParticles,
+    WCSPHSolver (const WCSPHConfig& config, ParticleSystem& fluidParticles, 
         ParticleSystem& boundaryParticles);
     ~WCSPHSolver ();
     
@@ -72,7 +70,6 @@ private:
 
     inline void updateNeighborGrid (unsigned char activeID);
     inline void updatePositions (unsigned char activeID);
-
 
     float mDomainOrigin[2];
     float mDomainEnd[2];
@@ -88,6 +85,10 @@ private:
     ParticleSystem* mFluidParticles;
     NeighborGrid mFluidParticleGrid;
     
+    //ParticleSystem* mFluidParticlesHigh;
+    //NeighborGrid mFluidParticleGridHigh;
+
+
     ParticleSystem* mBoundaryParticles;
     
     dim3 mGridDim;

@@ -11,11 +11,7 @@
 #include "OpenGL.h"
 
 //-----------------------------------------------------------------------------
-//  Declare file exclusive aux. functions
-//-----------------------------------------------------------------------------
 static char* readFile(const char* filename);
-//-----------------------------------------------------------------------------
-//  Definition of "OpenGL.h"
 //-----------------------------------------------------------------------------
 void GL::AttachShader(GLuint program, const char* filename, GLenum type) 
 {
@@ -107,7 +103,13 @@ void GL::DumpLog(GLuint program)
 	free(log); 
 }
 //-----------------------------------------------------------------------------
-//  Definition of file exclusive aux. functions.
+void GL::CreateBufferObject (GLuint& buffer, GLenum target, 
+    GLsizeiptr size, const GLvoid* data, GLenum usage)
+{
+    glGenBuffers(1, &buffer);
+    glBindBuffer(target, buffer);
+    glBufferData(target, size, data, usage);
+}
 //-----------------------------------------------------------------------------
 char* readFile(const char* filename) 
 {

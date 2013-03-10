@@ -12,9 +12,13 @@
 #include "OpenGL\OpenGL.h"
 #include "CUDA\cuda.h"
 
+class WCSPHSolver;
+
 class ParticleSystem
 {
     DECL_DEFAULTS (ParticleSystem)
+
+    friend WCSPHSolver;
 
 public:
     ParticleSystem (unsigned int maxParticles, float mass);
@@ -25,12 +29,14 @@ public:
     inline float* Velocities ();
     inline float* Densities ();
     inline float* Pressures ();
+    inline int* ParticleIDs ();
 
     inline float GetMass () const;
     inline unsigned int GetNumParticles () const;
     inline unsigned int GetMaxParticles () const;
 
 
+    inline GLuint GetIndexVBO() const;
     inline GLuint GetPositionsVBO () const;
     
     void PushParticle (float position[2]);
@@ -49,7 +55,8 @@ private:
     
     // cuda/gl interop member
     GLuint mPositionsVBO;
-    cudaGraphicsResource_t mGraphicsResources[1];
+    GLuint mParticleIDsVBO[2];
+    cudaGraphicsResource_t mGraphicsResources[3];
     bool mIsMapped;
     
     // cuda device ptr
@@ -57,6 +64,10 @@ private:
     float* mdVelocities;
     float* mdDensities;
     float* mdPressures;
+
+    int mActive;
+    int* mdParticleIDs[2];   //!< flip flop array for 
+                             //!< storing active particleIDS
 
 
     float mMass;    

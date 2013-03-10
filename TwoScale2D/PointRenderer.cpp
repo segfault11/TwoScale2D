@@ -54,7 +54,8 @@ PointRenderer::PointRenderer (const ParticleSystem& particleSystem, float xs,
     glBindBuffer(GL_ARRAY_BUFFER, mParticleSystem->GetPositionsVBO());
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
+    glBindBuffer(GL_ARRAY_BUFFER, mParticleSystem->GetPositionsVBO());
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mParticleSystem->GetIndexVBO());
 }
 //-----------------------------------------------------------------------------
 PointRenderer::~PointRenderer ()
@@ -68,6 +69,9 @@ void PointRenderer::Render () const
     glUseProgram(mProgram);
     glBindVertexArray(mVAO);
     glBindBuffer(GL_ARRAY_BUFFER, mParticleSystem->GetPositionsVBO());
-    glDrawArrays(GL_POINTS, 0, mParticleSystem->GetNumParticles());
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mParticleSystem->GetIndexVBO());
+    //glDrawArrays(GL_POINTS, 0, mParticleSystem->GetNumParticles());
+    glDrawElements(GL_POINTS, mParticleSystem->GetNumParticles(), 
+        GL_UNSIGNED_INT, 0);
 }
 //-----------------------------------------------------------------------------

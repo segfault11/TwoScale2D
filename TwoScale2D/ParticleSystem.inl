@@ -34,6 +34,11 @@ float* ParticleSystem::Pressures ()
     return mdPressures;
 }
 //-----------------------------------------------------------------------------
+int* ParticleSystem::ParticleIDs ()
+{
+    return mdParticleIDs[mActive];
+}
+//-----------------------------------------------------------------------------
 float ParticleSystem::GetMass () const
 {
     return mMass;
@@ -51,13 +56,11 @@ unsigned int ParticleSystem::GetMaxParticles () const
 //-----------------------------------------------------------------------------
 GLuint ParticleSystem::GetPositionsVBO () const
 {
-    if (mIsMapped)
-    {
-        UTIL::ThrowException("Positions are currently mapped to CUDA memory",
-            __FILE__, __LINE__);
-    }
-
-
     return mPositionsVBO;
+}
+//-----------------------------------------------------------------------------
+GLuint ParticleSystem::GetIndexVBO () const
+{
+    return mParticleIDsVBO[mActive];
 }
 //-----------------------------------------------------------------------------
