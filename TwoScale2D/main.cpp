@@ -72,10 +72,10 @@ void display ()
     glutSwapBuffers();
     glutPostRedisplay();
 
-    if ( i == 5000)
-    {
-        saveScreenshot("5000.bmp");
-    }
+    //if ( i == 5000)
+    //{
+    //    saveScreenshot("5000.bmp");
+    //}
 
     //std::cout << i++ << std::endl;
 }
