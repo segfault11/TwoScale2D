@@ -57,6 +57,7 @@ void display ()
     static int i = 0;
 
     gSolver->Advance();
+    //gSolver->AdvanceHigh();
     
 
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -116,11 +117,16 @@ void init ()
             0.105f, 0.105f, 0.0025f, 101, 151, 
             particleMass
         );     
-        gFluidParticlesHigh = new ParticleSystem
+        //gFluidParticlesHigh = new ParticleSystem
+        //(
+        //    gFluidParticles->GetMaxParticles()*4,
+        //    gFluidParticles->GetMass()/4.0f
+        //);
+        gFluidParticlesHigh = CreateParticleBox
         (
-            gFluidParticles->GetMaxParticles()*4,
-            gFluidParticles->GetMass()/4.0f
-        );
+            0.705f, 0.105f, 0.00125f, 101, 151, 
+            particleMass/4.0f
+        );  
         gBoundaryParticles = CreateParticleBoxCanvas
         (
             0.1f, 0.1f, 0.0025f,321, 321, 3, 3, 
