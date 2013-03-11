@@ -69,7 +69,6 @@ private:
     int* mdParticleIDs[2];   //!< flip flop array for 
                              //!< storing active particleIDS
 
-
     float mMass;    
 };
 

@@ -59,17 +59,23 @@ public:
     void Bind () const;
     void Unbind () const;
     void Advance ();
+    void AdvanceHigh ();
 
 private:
     inline void initBoundaries () const;
 
     inline void updateNeighborGrid (unsigned char activeID);
     inline void updatePositions (unsigned char activeID);
+    inline void updateNeighborGridHigh (unsigned char activeID);
+    inline void updatePositionsHigh (unsigned char activeID);
+
 
     float mDomainOrigin[2];
     float mDomainEnd[2];
     int mDomainDimensions[2];
-    float mEffectiveRadius;
+    int mDomainDimensionsHigh[2];
+    float mEffectiveRadius;    
+    float mEffectiveRadiusHigh;
     float mRestDensity;
     float mTaitCoeffitient;
     float mSpeedSound;

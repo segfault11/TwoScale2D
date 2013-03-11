@@ -1,4 +1,4 @@
-﻿Build started 3/10/2013 10:13:14 PM.
+﻿Build started 3/11/2013 11:05:38 AM.
      1>Project "C:\Users\Arno\Documents\Projects\TwoScale2D\TwoScale2D\TwoScale2D.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
          Creating "Release\TwoScale2D.unsuccessfulbuild" because "AlwaysCreate" was specified.
@@ -8,19 +8,22 @@
        Skipping target "AddCudaCompilePropsDeps" because all output files are up-to-date with respect to the input files.
        CudaBuild:
          Compiling CUDA source file WCSPHSolver.cu...
-         cmd.exe /C "C:\Users\Arno\AppData\Local\Temp\a77df4501c14464abbe3c7bd495f9003.cmd"
+         cmd.exe /C "C:\Users\Arno\AppData\Local\Temp\e37fe40cc27f4863a60349d77b0eb945.cmd"
          "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\bin\nvcc.exe" -gencode=arch=compute_20,code=\"sm_20,compute_20\" --use-local-env --cl-version 2010 -ccbin "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin"  -I"C:\OpenCV2.1\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\include"     --keep-dir "Release" -maxrregcount=0  --machine 32 --compile     -D_MBCS -Xcompiler "/EHsc /W3 /nologo /O2 /Zi  /MD  " -o "Release\WCSPHSolver.cu.obj" "C:\Users\Arno\Documents\Projects\TwoScale2D\TwoScale2D\WCSPHSolver.cu"
          
          C:\Users\Arno\Documents\Projects\TwoScale2D\TwoScale2D>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\bin\nvcc.exe" -gencode=arch=compute_20,code=\"sm_20,compute_20\" --use-local-env --cl-version 2010 -ccbin "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin"  -I"C:\OpenCV2.1\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\include"     --keep-dir "Release" -maxrregcount=0  --machine 32 --compile     -D_MBCS -Xcompiler "/EHsc /W3 /nologo /O2 /Zi  /MD  " -o "Release\WCSPHSolver.cu.obj" "C:\Users\Arno\Documents\Projects\TwoScale2D\TwoScale2D\WCSPHSolver.cu" 
          WCSPHSolver.cu
-         tmpxft_00001e40_00000000-2_WCSPHSolver.cudafe1.gpu
-         tmpxft_00001e40_00000000-7_WCSPHSolver.cudafe2.gpu
+         tmpxft_000013cc_00000000-2_WCSPHSolver.cudafe1.gpu
+         tmpxft_000013cc_00000000-7_WCSPHSolver.cudafe2.gpu
          WCSPHSolver.cu
-         tmpxft_00001e40_00000000-2_WCSPHSolver.cudafe1.cpp
-         tmpxft_00001e40_00000000-12_WCSPHSolver.ii
-     1>C:/Users/Arno/Documents/Projects/TwoScale2D/TwoScale2D/WCSPHSolver.cu(742): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>C:/Users/Arno/Documents/Projects/TwoScale2D/TwoScale2D/WCSPHSolver.cu(743): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>C:/Users/Arno/Documents/Projects/TwoScale2D/TwoScale2D/WCSPHSolver.cu(894): warning C4244: '=' : conversion from 'float' to 'unsigned int', possible loss of data
+         tmpxft_000013cc_00000000-2_WCSPHSolver.cudafe1.cpp
+         tmpxft_000013cc_00000000-12_WCSPHSolver.ii
+     1>C:/Users/Arno/Documents/Projects/TwoScale2D/TwoScale2D/WCSPHSolver.cu(1186): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>C:/Users/Arno/Documents/Projects/TwoScale2D/TwoScale2D/WCSPHSolver.cu(1187): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>C:/Users/Arno/Documents/Projects/TwoScale2D/TwoScale2D/WCSPHSolver.cu(1201): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>C:/Users/Arno/Documents/Projects/TwoScale2D/TwoScale2D/WCSPHSolver.cu(1203): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>C:/Users/Arno/Documents/Projects/TwoScale2D/TwoScale2D/WCSPHSolver.cu(1459): warning C4244: '=' : conversion from 'float' to 'unsigned int', possible loss of data
+     1>C:/Users/Arno/Documents/Projects/TwoScale2D/TwoScale2D/WCSPHSolver.cu(1511): warning C4244: '=' : conversion from 'float' to 'unsigned int', possible loss of data
        ClCompile:
          All outputs are up-to-date.
        ManifestResourceCompile:
@@ -58,4 +61,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:19.93
+Time Elapsed 00:00:20.06
