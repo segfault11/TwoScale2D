@@ -536,18 +536,80 @@ __device__ inline void updateAccCellHigh
     }
 }
 //-----------------------------------------------------------------------------
-__device__ void updateAccBCellHigh
-(
+__device__ inline void updateAccCellComplementHigh
+(   
+    float2& acc, 
+    float2& accT, 
     float2& accB, 
-    float2 pos, 
+    const float2& pos, 
+    const float2& vel, 
+    float dens, 
+    float pre, 
+    const float* const dParticlePositions, 
+    const float* const dParticleDensities, 
+    const float* const dParticlePressures, 
+    const float* const dParticleVelocities, 
+    const int* const dParticleIDs, 
     int start, 
-    int end
+    int end, 
+    int startB, 
+    int endB
 )
 {
+    float dens2 = dens*dens;
+
+    for (int i = start; i < end; i++)
+    {
+        int j = dParticleIDs[i];
+        float2 posj;
+        posj.x = dParticlePositions[2*j + 0];
+        posj.y = dParticlePositions[2*j + 1];
+        float2 velj;
+        velj.x = dParticleVelocities[2*j + 0];
+        velj.y = dParticleVelocities[2*j + 1];
+        float densj = dParticleDensities[j];
+        float prej = dParticlePressures[j];
+        float densj2 = densj*densj;
+        float2 posij;
+        posij.x = pos.x - posj.x;
+        posij.y = pos.y - posj.y;
+        float dist = norm(posij);
+
+        if (dist != 0.0f && dist < gdEffectiveRadiusHigh)
+        {
+            // compute pressure contribution
+            float coeff = pre/dens2 + prej/densj2;
+
+            // compute artifcial velocity
+            float2 velij;
+            velij.x = vel.x - velj.x;
+            velij.y = vel.y - velj.y;
+            float dvp = dot(velij, posij);
+
+            if (dvp < 0.0f)
+            {
+                coeff -= dvp/(dist*dist + 0.01f*gdEffectiveRadiusHigh*
+                    gdEffectiveRadiusHigh)*2.0f*gdEffectiveRadiusHigh*gdAlpha*
+                    gdSpeedSound/(dens + densj);
+            }
+            
+            float2 grad;
+            evaluateGradientM4KernelHigh(grad.x, grad.y, posij, dist);
+
+            acc.x += coeff*grad.x;
+            acc.y += coeff*grad.y;
+
+
+            float w = evaluateM4KernelHigh(dist);
+            accT.x += w*posij.x;
+            accT.y += w*posij.y; 
+        }
+    }
+
     float c = gdBoundaryParticleMass/(gdFluidParticleMassHigh + 
         gdBoundaryParticleMass);
 
-    for (int i = start; i < end; i++)
+    for (int i = startB; i < endB; i++)
     {
         int k = tex1Dfetch(gdBoundaryParticleIDsTex, i);
         float2 posk;
@@ -930,9 +992,16 @@ __global__ void computeParticleAccelerationAndAdvanceHigh
     int* const dParticleCount,
     const float* const dParticleDensities, 
     const float* const dParticlePressures, 
+    const  float* const dParticlePositionsLow, 
+    const  float* const dParticleVelocitiesLow,
+    const float* const dParticleDensitiesLow, 
+    const float* const dParticlePressuresLow,
     const int* const dParticleIDs, 
     const int* const dCellStartIndices,
     const int* const dCellEndIndices, 
+    const int* const dParticleIDsLow, 
+    const int* const dCellStartIndicesLow,
+    const int* const dCellEndIndicesLow, 
     float dt, 
     unsigned int numParticles
 )
@@ -993,9 +1062,17 @@ __global__ void computeParticleAccelerationAndAdvanceHigh
         for (int i = cs.x; i <= ce.x; i++)
         {
             int hash = computeHash(i, j);
+            int start = dCellStartIndicesLow[hash];
+            int end = dCellEndIndicesLow[hash];
             int startB = tex1Dfetch(gdBoundaryCellStartIndicesTex, hash);
             int endB = tex1Dfetch(gdBoundaryCellEndIndicesTex, hash);
-            updateAccBCellHigh(accB, pos, startB, endB);
+            updateAccCellComplementHigh
+            (
+                acc, accT, accB, pos, vel, density, pressure, 
+                dParticlePositionsLow, dParticleDensitiesLow, 
+                dParticlePressuresLow, dParticleVelocitiesLow, dParticleIDsLow, 
+                start, end, startB, endB
+            );
         }
     }
 
@@ -1317,8 +1394,10 @@ void WCSPHSolver::Advance ()
     (
         mFluidParticles->Densities(), mFluidParticles->Pressures(), 
         mFluidParticles->mdParticleIDs[activeID], 
-        mFluidParticleGrid.dCellStart, mFluidParticleGrid.dCellEnd, 
-        mFluidParticles->Positions(), mFluidParticles->mNumParticles
+        mFluidParticleGrid.dCellStart, 
+        mFluidParticleGrid.dCellEnd, 
+        mFluidParticles->Positions(), 
+        mFluidParticles->mNumParticles
     ); 
     timer.Stop();
     timer.DumpElapsed();   
@@ -1328,7 +1407,6 @@ void WCSPHSolver::Advance ()
     mBoundaryParticles->Unmap();
     mFluidParticlesHigh->Unmap();
     mFluidParticles->Unmap();
-
 
     activeID = (activeID + 1) % 2; 
 }
@@ -1417,7 +1495,7 @@ void WCSPHSolver::updateNeighborGrid (unsigned char activeID)
 void WCSPHSolver::updateNeighborGridHigh (unsigned char activeID)
 {
     CUDA::Timer timer;
-    
+        
     // compute hash of active particles
     computeParticleHashHigh<<<mGridDimHigh, mBlockDim>>>
     (
@@ -1499,18 +1577,6 @@ void WCSPHSolver::updatePositions (unsigned char activeID)
     (
         static_cast<float>(mFluidParticles->mNumParticles)/mBlockDim.x
     );
-
-    // copy back the # of current particles (high) in the list
-    // update particle system information
-    CUDA_SAFE_CALL( cudaMemcpy
-    (
-        &mFluidParticlesHigh->mNumParticles, 
-        mdParticleCountHigh, 
-        sizeof(int), 
-        cudaMemcpyDeviceToHost
-     ) )
-     
-    //std::cout << mFluidParticles->mNumParticles << "/" << mFluidParticlesHigh->mNumParticles <<  "/" << (mFluidParticles->mMaxParticles - mFluidParticles->mNumParticles)*4 << std::endl; 
 }
 //-----------------------------------------------------------------------------
 void WCSPHSolver::updatePositionsHigh (unsigned char activeID)
@@ -1530,9 +1596,16 @@ void WCSPHSolver::updatePositionsHigh (unsigned char activeID)
         mdParticleCountHigh,
         mFluidParticlesHigh->Densities(),
         mFluidParticlesHigh->Pressures(),
+        mFluidParticles->mdPositions,
+        mFluidParticles->mdVelocities,
+        mFluidParticles->mdDensities,
+        mFluidParticles->mdPressures,
         mFluidParticlesHigh->mdParticleIDs[activeID], 
         mFluidParticleGridHigh.dCellStart, 
         mFluidParticleGridHigh.dCellEnd, 
+        mFluidParticles->mdParticleIDs[0], 
+        mFluidParticleGrid.dCellStart, 
+        mFluidParticleGrid.dCellEnd, 
         mTimeStep, 
         mFluidParticlesHigh->mNumParticles
     );
@@ -1548,6 +1621,7 @@ void WCSPHSolver::updatePositionsHigh (unsigned char activeID)
         sizeof(int), 
         cudaMemcpyDeviceToHost
     ) );
+
     mFluidParticlesHigh->mActive = (activeID + 1) % 2;
     mGridDimHigh.x = std::ceil
     (

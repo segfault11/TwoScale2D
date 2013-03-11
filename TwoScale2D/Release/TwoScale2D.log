@@ -1,4 +1,4 @@
-﻿Build started 3/11/2013 1:54:02 PM.
+﻿Build started 3/11/2013 3:06:46 PM.
      1>Project "C:\Users\Arno\Documents\Projects\TwoScale2D\TwoScale2D\TwoScale2D.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
          Creating "Release\TwoScale2D.unsuccessfulbuild" because "AlwaysCreate" was specified.
@@ -47,4 +47,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.49
+Time Elapsed 00:00:01.47
