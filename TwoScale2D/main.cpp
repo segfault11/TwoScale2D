@@ -56,8 +56,8 @@ void display ()
 {
     static int i = 0;
 
-    gSolver->Advance();
-    //gSolver->AdvanceHigh();
+    //gSolver->Advance();
+    gSolver->AdvanceHigh();
     
 
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -76,8 +76,6 @@ void display ()
     {
         saveScreenshot("5000.bmp");
     }
-
-
 
     //std::cout << i++ << std::endl;
 }
@@ -105,12 +103,12 @@ void init ()
         unsigned int numParticles = 101*151;
         float particleMass = fluidVol*restDensity/numParticles;
         float effectiveRadius = std::sqrtf(fluidVol*25.0f/(numParticles*PI));
-        float effectiveRadiusHigh = 0.5f*std::sqrtf(fluidVol*25.0f/(numParticles*PI));
+        float effectiveRadiusHigh = 0.5f*effectiveRadius;
         float taitCoeff = 1119.0714f;
         float speedSound = 88.1472f;
         float alpha = 0.04f;
         float tensionCoefficient = 0.08f;
-        float timeStep = 0.0005f;
+        float timeStep = 0.0003f;
 
         gFluidParticles = CreateParticleBox
         (

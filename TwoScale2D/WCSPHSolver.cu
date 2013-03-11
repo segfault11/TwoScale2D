@@ -1046,7 +1046,7 @@ WCSPHConfig::WCSPHConfig
 )
 : 
     EffectiveRadius(effectiveRadius), 
-    EffectiveRadiusHigh(EffectiveRadiusHigh),
+    EffectiveRadiusHigh(effectiveRadiusHigh),
     RestDensity(restDensity), 
     TaitCoeffitient(taitCoeff), 
     SpeedSound(speedSound),
@@ -1115,7 +1115,7 @@ WCSPHSolver::WCSPHSolver
 )
 : 
     mEffectiveRadius(config.EffectiveRadius), 
-    mEffectiveRadiusHigh(config.EffectiveRadius),
+    mEffectiveRadiusHigh(config.EffectiveRadiusHigh),
     mRestDensity(config.RestDensity),
     mTaitCoeffitient(config.TaitCoeffitient),
     mSpeedSound(config.SpeedSound),
@@ -1136,8 +1136,7 @@ WCSPHSolver::WCSPHSolver
         config.DomainDimensionsHigh, 
         fluidParticlesHigh.GetMaxParticles()
     ),
-    mBlockDim(256, 1 , 1),
-    mGridDim(1, 1, 1)
+    mBlockDim(256, 1 , 1)
 {
     mDomainOrigin[0] = config.DomainOrigin[0];
     mDomainOrigin[1] = config.DomainOrigin[1];
@@ -1313,13 +1312,16 @@ void WCSPHSolver::Advance ()
     
     this->updateNeighborGrid(activeID);
     
+    timer.Start();
     computeParticleDensityPressure<<<mGridDim, mBlockDim>>>
     (
         mFluidParticles->Densities(), mFluidParticles->Pressures(), 
         mFluidParticles->mdParticleIDs[activeID], 
         mFluidParticleGrid.dCellStart, mFluidParticleGrid.dCellEnd, 
         mFluidParticles->Positions(), mFluidParticles->mNumParticles
-    );    
+    ); 
+    timer.Stop();
+    timer.DumpElapsed();   
 
     this->updatePositions(activeID);
 
@@ -1343,6 +1345,9 @@ void WCSPHSolver::AdvanceHigh ()
     
     this->updateNeighborGridHigh(activeID);
     
+    timer.Start();
+
+    //std::cout << mGridDimHigh.x << std::endl;
     computeParticleDensityPressureHigh<<<mGridDimHigh, mBlockDim>>>
     (
         mFluidParticlesHigh->Densities(), 
@@ -1353,13 +1358,14 @@ void WCSPHSolver::AdvanceHigh ()
         mFluidParticlesHigh->Positions(), 
         mFluidParticlesHigh->mNumParticles
     );    
+    timer.Stop();
+    timer.DumpElapsed();
 
     this->updatePositionsHigh(activeID);
 
     mBoundaryParticles->Unmap();
     mFluidParticlesHigh->Unmap();
     mFluidParticles->Unmap();
-
 
     activeID = (activeID + 1) % 2; 
 }
@@ -1458,7 +1464,7 @@ void WCSPHSolver::updatePositions (unsigned char activeID)
     CUDA_SAFE_CALL( cudaMemset(mdParticleCount, 0, sizeof(int)) );
     
     // reset particle count to zero
-    timer.Start();
+    /*timer.Start();*/
     computeParticleAccelerationAndAdvance<<<mGridDim, mBlockDim>>>
     (
         mFluidParticles->Positions(), 
@@ -1476,8 +1482,8 @@ void WCSPHSolver::updatePositions (unsigned char activeID)
         mTimeStep, 
         mFluidParticles->mNumParticles
     );
-    timer.Stop();
-    timer.DumpElapsed();
+    //timer.Stop();
+    //timer.DumpElapsed();
     
     // copy back the # of current particles in the list
     // update particle system information
