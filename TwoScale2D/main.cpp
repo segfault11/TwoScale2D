@@ -19,7 +19,7 @@ PointRenderer* gFluidRenderer;
 PointRenderer* gFluidRendererHigh;
 PointRenderer* gBoundaryRenderer;
 WCSPHSolver* gSolver;
-static VideoWriter gsVideoWriter("video.avi", WIDTH, HEIGHT);
+static VideoWriter gsVideoWriter("video2.avi", WIDTH, HEIGHT);
 
 void display ();
 void keyboard (unsigned char key, int x, int y);
@@ -56,10 +56,9 @@ void display ()
 {
     static int i = 0;
 
-    //gSolver->Advance();
-    gSolver->AdvanceHigh();
+    gSolver->AdvanceTS();
+    //gSolver->AdvanceHigh();
     
-
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -72,12 +71,14 @@ void display ()
     glutSwapBuffers();
     glutPostRedisplay();
 
-    //if ( i == 5000)
+    //if (i % 15 == 0)
     //{
-    //    saveScreenshot("5000.bmp");
+    //    gsVideoWriter.CaptureFrame();
+    //    std::cout << i << std::endl;
     //}
 
-    //std::cout << i++ << std::endl;
+    i++;
+    
 }
 
 void keyboard (unsigned char key, int x, int y)
@@ -155,8 +156,7 @@ void init ()
         (
             config, *gFluidParticles, *gFluidParticlesHigh,*gBoundaryParticles
         );
-        gSolver->Bind();  
-        gSolver->Advance();
+        gSolver->Bind();      
     }
     catch (const std::runtime_error& e)
     {

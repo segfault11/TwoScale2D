@@ -15,7 +15,6 @@ struct WCSPHConfig
 {
     DECL_DEFAULTS (WCSPHConfig)
 
-
     WCSPHConfig (float xs, float ys, float xe, float ye, float effectiveRadius, 
         float effectiveRadiusHigh, float restDensity, float taitCoeff, 
         float speedSound, float alpha, float tensionCoefficient, float timeStep);
@@ -60,6 +59,7 @@ public:
     void Unbind () const;
     void Advance ();
     void AdvanceHigh ();
+    void AdvanceTS ();
 
 private:
     inline void initBoundaries () const;
@@ -68,7 +68,6 @@ private:
     inline void updatePositions (unsigned char activeID);
     inline void updateNeighborGridHigh (unsigned char activeID);
     inline void updatePositionsHigh (unsigned char activeID);
-
 
     float mDomainOrigin[2];
     float mDomainEnd[2];
