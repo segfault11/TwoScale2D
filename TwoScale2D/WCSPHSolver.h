@@ -65,9 +65,12 @@ private:
     inline void initBoundaries () const;
 
     inline void updateNeighborGrid (unsigned char activeID);
+    inline void computePressureDensity(unsigned int activeID);
     inline void updatePositions (unsigned char activeID);
     inline void updateNeighborGridHigh (unsigned char activeID);
+    inline void computePressureDensityHigh(unsigned int activeID);
     inline void updatePositionsHigh (unsigned char activeID);
+    inline void relaxTransient (unsigned char activeID);
 
     float mDomainOrigin[2];
     float mDomainEnd[2];
@@ -95,6 +98,12 @@ private:
     NeighborGrid mFluidParticleGridHigh;
 
     ParticleSystem* mBoundaryParticles;
+
+    dim3 mGridDimTransient;
+    int mTransientParticleCount;
+    int* mdTransientParticleCount;
+    int* mdTransientIDs;
+
     
     mutable bool mIsBoundaryInit;
     int* mdBoundaryParticleHashs;

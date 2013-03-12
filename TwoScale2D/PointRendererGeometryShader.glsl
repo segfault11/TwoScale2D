@@ -23,7 +23,7 @@ gGeometryData;
 
 void main() 
 {
-    float dx = 0.002f;
+    float dx = 0.005f;
     
     gl_Position = gl_in[0].gl_Position + vec4(dx, dx, 0.0f, 0.0f);
     gGeometryData.relCoord = vec2(1.0f, 1.0f);

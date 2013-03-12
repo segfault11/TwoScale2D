@@ -19,7 +19,7 @@ PointRenderer* gFluidRenderer;
 PointRenderer* gFluidRendererHigh;
 PointRenderer* gBoundaryRenderer;
 WCSPHSolver* gSolver;
-static VideoWriter gsVideoWriter("video2.avi", WIDTH, HEIGHT);
+static VideoWriter gsVideoWriter("video.avi", WIDTH, HEIGHT);
 
 void display ();
 void keyboard (unsigned char key, int x, int y);
@@ -57,7 +57,7 @@ void display ()
     static int i = 0;
 
     gSolver->AdvanceTS();
-    //gSolver->AdvanceHigh();
+    //gSolver->AdvanceHigh(); 
     
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -66,16 +66,15 @@ void display ()
     gFluidRendererHigh->Render();
     gBoundaryRenderer->Render();
 
-
     glFlush();
     glutSwapBuffers();
     glutPostRedisplay();
 
-    //if (i % 15 == 0)
-    //{
-    //    gsVideoWriter.CaptureFrame();
-    //    std::cout << i << std::endl;
-    //}
+    if (i % 5 == 0)
+    {
+        gsVideoWriter.CaptureFrame();
+        //std::cout << i << std::endl;
+    }
 
     i++;
     
@@ -109,23 +108,23 @@ void init ()
         float speedSound = 88.1472f;
         float alpha = 0.04f;
         float tensionCoefficient = 0.08f;
-        float timeStep = 0.0003f;
+        float timeStep = 0.00030f;
 
         gFluidParticles = CreateParticleBox
         (
             0.105f, 0.105f, 0.0025f, 101, 151, 
             particleMass
         );     
-        //gFluidParticlesHigh = new ParticleSystem
-        //(
-        //    gFluidParticles->GetMaxParticles()*4,
-        //    gFluidParticles->GetMass()/4.0f
-        //);
-        gFluidParticlesHigh = CreateParticleBox
+        gFluidParticlesHigh = new ParticleSystem
+        (
+            gFluidParticles->GetMaxParticles()*4,
+            gFluidParticles->GetMass()/4.0f
+        );
+/*        gFluidParticlesHigh = CreateParticleBox
         (
             0.705f, 0.105f, 0.00125f, 101, 151, 
             particleMass/4.0f
-        );  
+        ); */ 
         gBoundaryParticles = CreateParticleBoxCanvas
         (
             0.1f, 0.1f, 0.0025f,321, 321, 3, 3, 
